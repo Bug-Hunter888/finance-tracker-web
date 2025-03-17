@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js via CDN -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.0/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-16 max-w-6xl" x-data="{
+        currentStep: 1,
+        totalSteps: 4,
+        name: '',
+        selectedOption: '',
+        preferences: [],
+        isComplete: false,
+        nextStep() {
+            if (this.currentStep < this.totalSteps) {
+                this.currentStep++;
+            } else {
+                this.isComplete = true;
+            }
+        },
+        prevStep() {
+            if (this.currentStep > 1) {
+                this.currentStep--;
+            }
+        }
+    }">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-indigo-600 mb-2">Get Started</h1>
+            <p class="text-gray-600 text-lg">Complete these steps to set up your account</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-12 max-w-3xl mx-auto">
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
+                    :style="`width: ${(currentStep/totalSteps) * 100}%`"></div>
+            </div>
+            <div class="flex justify-between mt-2 text-sm text-gray-500">
+                <template x-for="step in totalSteps" :key="step">
+                    <div :class="{ 'text-indigo-600 font-semibold': currentStep >= step }">
+                        <span x-text="`Step ${step}`"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Step Container -->
+        <div class="bg-white shadow-lg rounded-lg p-8 max-w-3xl mx-auto">
+            <!-- Step 1: Welcome -->
+            <div x-show="currentStep === 1" class="space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Welcome! Let's get to know you</h2>
+                <p class="text-gray-600">Please tell us your name so we can personalize your experience.</p>
+                
+                <div class="mt-6">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                    <input type="text" id="name" x-model="name" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Step 2: Choose your path -->
+            <div x-show="currentStep === 2" class="space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Choose your path</h2>
+                <p class="text-gray-600">Select the option that best fits your needs.</p>
+                
+                <div class="mt-6 space-y-4">
+                    <template x-for="(option, index) in ['For Individuals', 'For Teams', 'For Enterprise']" :key="index">
+                        <div @click="selectedOption = option" 
+                            :class="`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${selectedOption === option ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'}`">
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-800" x-text="option"></h3>
+                                <p class="text-sm text-gray-500" x-text="`Description for ${option.toLowerCase()} option goes here`"></p>
+                            </div>
+                            <div class="ml-3 flex-shrink-0">
+                                <div :class="`w-5 h-5 rounded-full border ${selectedOption === option ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'}`">
+                                    <svg x-show="selectedOption === option" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Step 3: Preferences -->
+            <div x-show="currentStep === 3" class="space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Set your preferences</h2>
+                <p class="text-gray-600">Choose all that apply to customize your experience.</p>
+                
+                <div class="mt-6 space-y-3">
+                    <template x-for="(pref, index) in ['Email notifications', 'Mobile alerts', 'Weekly digest', 'Dark mode', 'Auto-save']" :key="index">
+                        <div class="flex items-center">
+                            <input :id="`pref-${index}`" type="checkbox" 
+                                x-model="preferences" :value="pref"
+                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label :for="`pref-${index}`" class="ml-2 block text-gray-700" x-text="pref"></label>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Step 4: Final Step -->
+            <div x-show="currentStep === 4" class="space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Almost there!</h2>
+                <p class="text-gray-600">Review your information before finalizing.</p>
+                
+                <div class="mt-6 space-y-4 bg-gray-50 p-4 rounded-lg">
+                    <div>
+                        <span class="font-medium">Name:</span>
+                        <span x-text="name || 'Not provided'"></span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Selected Plan:</span>
+                        <span x-text="selectedOption || 'None selected'"></span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Preferences:</span>
+                        <span x-text="preferences.length > 0 ? preferences.join(', ') : 'None selected'"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completion Screen -->
+            <div x-show="isComplete" class="text-center space-y-6">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
+                    <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-800">All set, <span x-text="name || 'there'"></span>!</h2>
+                <p class="text-gray-600">Your account has been successfully configured.</p>
+                
+                <div class="mt-6">
+                    <button class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between mt-10" x-show="!isComplete">
+                <button 
+                    @click="prevStep()" 
+                    x-show="currentStep > 1"
+                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Back
+                </button>
+                <div x-show="currentStep === 1"></div>
+                <button 
+                    @click="nextStep()"
+                    :class="`px-4 py-2 rounded-md text-white ${currentStep < totalSteps ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-green-600 hover:bg-green-700'}`">
+                    <span x-text="currentStep < totalSteps ? 'Continue' : 'Complete'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

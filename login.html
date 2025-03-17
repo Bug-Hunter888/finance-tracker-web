@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Login Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.0/cdn.min.js"></script>
+    <!-- Google OAuth Client Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-blue-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md" x-data="{
+        email: '',
+        password: '',
+        showPassword: false,
+        rememberMe: false,
+        loading: false,
+        error: '',
+        
+        validateEmail() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return this.email === '' || emailPattern.test(this.email);
+        },
+        
+        async login() {
+            if (this.email === '' || this.password === '') {
+                this.error = 'Email and password are required';
+                return;
+            }
+            
+            if (!this.validateEmail()) {
+                this.error = 'Please enter a valid email address';
+                return;
+            }
+            
+            this.loading = true;
+            this.error = '';
+            
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Demo validation - in real app, this would be an API call
+            if (this.email === 'user@example.com' && this.password === 'password') {
+                // Redirect or show success
+                alert('Login successful!');
+            } else {
+                this.error = 'Invalid email or password';
+            }
+            
+            this.loading = false;
+        },
+        
+        // Handle Google sign-in response
+        handleGoogleSignIn(response) {
+            // Get the ID token from the response
+            const idToken = response.credential;
+            
+            // Send the token to your backend
+            this.verifyGoogleToken(idToken);
+        },
+        
+        // Verify token with your backend
+        async verifyGoogleToken(idToken) {
+            this.loading = true;
+            this.error = '';
+            
+            try {
+                // In a real application, you would send this token to your backend
+                // for verification and user account creation or login
+                console.log('Google ID Token:', idToken);
+                
+                // Example of sending to backend:
+                /*
+                const response = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token: idToken })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Handle successful login/signup
+                    window.location.href = '/dashboard'; // Redirect to dashboard
+                } else {
+                    this.error = data.message || 'Authentication failed';
+                }
+                */
+                
+                // For demo purposes, show success message
+                alert('Google sign-in successful! Token received.');
+                
+            } catch (error) {
+                this.error = 'Failed to authenticate with Google';
+                console.error('Google authentication error:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        // Handle Apple Sign In (placeholder for actual implementation)
+        handleAppleSignIn() {
+            alert('Apple Sign In would be implemented here.');
+            // In a real implementation, you would integrate with Apple's Sign In JS SDK
+        },
+        
+        // Initialize Google Sign-In when Alpine loads
+        init() {
+            // This will run when the component initializes
+            window.onload = () => {
+                // Initialize Google Sign-In
+                google.accounts.id.initialize({
+                    client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+                    callback: this.handleGoogleSignIn.bind(this)
+                });
+                
+                // Display the Google Sign-In button
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInDiv'),
+                    { 
+                        theme: 'outline', 
+                        size: 'large',
+                        width: '100%',
+                        text: 'signup_with' // Use 'signup_with' instead of 'signin_with'
+                    }
+                );
+            };
+        }
+    }" x-init="init">
+        <!-- Login Container -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-8 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-center">
+                <h1 class="text-3xl font-bold">Welcome Back 💰</h1>
+                <p class="mt-2 text-blue-100">Sign in to your account</p>
+            </div>
+            
+            <!-- Form -->
+            <div class="p-6">
+                <form @submit.prevent="login">
+                    <!-- Error Alert -->
+                    <div 
+                        x-show="error" 
+                        x-transition 
+                        class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 text-red-700"
+                    >
+                        <p x-text="error"></p>
+                    </div>
+                    
+                    <!-- Email Field -->
+                    <div class="mb-4">
+                        <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            x-model="email"
+                            @blur="validateEmail()"
+                            class="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
+                            :class="{ 'border-red-500': email !== '' && !validateEmail() }"
+                            placeholder="youremail@example.com"
+                        >
+                        <p x-show="email !== '' && !validateEmail()" class="mt-1 text-sm text-red-600">Please enter a valid email address</p>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <input 
+                                :type="showPassword ? 'text' : 'password'" 
+                                id="password" 
+                                x-model="password"
+                                class="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 pr-10"
+                                placeholder="••••••••"
+                            >
+                            <button 
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 focus:outline-none"
+                            >
+                                <!-- Eye Icon (Shown when password is hidden) -->
+                                <svg x-show="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <!-- Eye Off Icon (Shown when password is visible) -->
+                                <svg x-show="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="remember" 
+                                x-model="rememberMe"
+                                class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                        </div>
+                        <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center"
+                        :class="{ 'opacity-70 cursor-not-allowed': loading }"
+                        :disabled="loading"
+                    >
+                        <svg 
+                            x-show="loading" 
+                            class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            fill="none" 
+                            viewBox="0 0 24 24"
+                        >
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="loading ? 'Signing in...' : 'Sign in'"></span>
+                    </button>
+                </form>
+                
+                <!-- Divider -->
+                <div class="my-6 flex items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-600 text-sm">Or continue with</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                
+                <!-- Social Login -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Google Sign-In Button (Official Google Button) -->
+                    <div id="googleSignInDiv" class="h-10"></div>
+                    
+                    <!-- Apple Sign In Button -->
+                    <button 
+                        @click="handleAppleSignIn"
+                        class="py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center transition duration-200"
+                    >
+                        <!-- Apple Logo -->
+                        <svg class="h-5 w-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.94,5.19A4.38,4.38,0,0,0,16,2,4.44,4.44,0,0,0,13,3.52,4.17,4.17,0,0,0,12,6.61,3.69,3.69,0,0,0,14.94,5.19Zm2.52,7.44a4.51,4.51,0,0,1,2.16-3.81,4.66,4.66,0,0,0-3.66-2c-1.56-.16-3,.91-3.83.91s-2-.89-3.3-.87A4.92,4.92,0,0,0,4.69,9.39C2.93,12.45,4.24,17,6,19.47,6.8,20.68,7.8,22.05,9.12,22s1.75-.82,3.28-.82,2,.82,3.3.79,2.22-1.24,3.06-2.45a11,11,0,0,0,1.38-2.85A4.41,4.41,0,0,1,17.46,12.63Z" fill="currentColor"/>
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+                
+                <!-- Sign Up Link -->
+                <p class="mt-8 text-center text-sm text-gray-600">
+                    Don't have an account? 
+                    <a href="./get.html" class="font-medium text-blue-600 hover:text-blue-500">Create Account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
